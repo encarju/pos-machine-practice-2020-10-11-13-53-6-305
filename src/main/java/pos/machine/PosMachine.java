@@ -1,9 +1,7 @@
 package pos.machine;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static java.util.Collections.frequency;
 
@@ -11,7 +9,7 @@ public class PosMachine {
 
     private static final String UNIT = " (yuan)";
     private static final String NEW_LINE = "\n";
-    private static final String DELIMITER = ",";
+    private static final int DEFAULT_TOTAL_PRICE = 0;
 
     public String printReceipt(List<String> barcodes) {
         List<Item> itemsWithDetail = convertToItems(barcodes);
@@ -32,7 +30,7 @@ public class PosMachine {
         receiptBuilder.append(itemDetail);
         receiptBuilder.append("----------------------");
         receiptBuilder.append(NEW_LINE);
-        receiptBuilder.append("Total: "+totalPrice+UNIT );
+        receiptBuilder.append(String.format("Total: %d%s",totalPrice,UNIT ));
         receiptBuilder.append(NEW_LINE);
         receiptBuilder.append("**********************");
         return receiptBuilder.toString();
@@ -43,10 +41,8 @@ public class PosMachine {
         receiptBuilder.append("***<store earning no money>Receipt***");
         receiptBuilder.append(NEW_LINE);
         for(Item item : receipt.getItemDetail()){
-            receiptBuilder.append("Name: "+item.getName()+DELIMITER);
-            receiptBuilder.append(" Quantity: "+item.getQuantity()+DELIMITER);
-            receiptBuilder.append(" Unit price: "+item.getUnitPrice()+UNIT+DELIMITER);
-            receiptBuilder.append(" Subtotal: "+item.getSubTotal()+UNIT);
+            receiptBuilder.append(String.format("Name: %s, Quantity: %d, Unit price: %d%s, Subtotal: %d%s",
+                    item.getName(),item.getQuantity(),item.getUnitPrice(),UNIT,item.getSubTotal(),UNIT));
             receiptBuilder.append(NEW_LINE);
         }
 
@@ -60,7 +56,7 @@ public class PosMachine {
     }
 
     private int calculateTotalPrice(List<Item> itemsWithSubTotal) {
-        int totalPrice = 0;
+        int totalPrice = DEFAULT_TOTAL_PRICE;
         for(Item itemWithSubTotal : itemsWithSubTotal){
             totalPrice = totalPrice+itemWithSubTotal.getSubTotal();
         }
