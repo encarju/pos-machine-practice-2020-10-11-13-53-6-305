@@ -1,7 +1,11 @@
 package pos.machine;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static java.util.Collections.frequency;
 
 public class PosMachine {
 
@@ -72,17 +76,28 @@ public class PosMachine {
     }
 
     private List<Item> convertToItems(List<String> barcodes) {
-        List<Item> itemsWithDetails = new ArrayList<>();
         List<ItemInfo> itemsInfo = loadAllItemsInfo();
+        return mapItemInfoWithQuanitity(barcodes,itemsInfo);
 
-        for(ItemInfo itemInfo : itemsInfo){
-            Long count = barcodes.stream().filter(barcode ->barcode.equals(itemInfo.getBarcode())).count();
-            itemsWithDetails.add(new Item(itemInfo.getName(),count.intValue(),itemInfo.getPrice()));
-        }
-        return itemsWithDetails;
     }
 
     private List<ItemInfo> loadAllItemsInfo() {
         return ItemDataLoader.loadAllItemInfos();
     }
+
+    private List<Item> mapItemInfoWithQuanitity(List<String> barcodes,List<ItemInfo> itemsInfo) {
+        List<Item> itemsWithDetails = new ArrayList<>();
+        barcodes.stream().distinct().forEach(barcode -> {
+            int quantity = frequency(barcodes, barcode);
+            ItemInfo itemInfo = getItemInfo(barcode,itemsInfo);
+            itemsWithDetails.add(new Item(itemInfo.getName(),quantity,itemInfo.getPrice()));
+        });
+        return  itemsWithDetails;
+    }
+
+    private ItemInfo getItemInfo(String barcode, List<ItemInfo> itemsInfo) {
+        return itemsInfo.stream().filter(
+                itemInfo -> itemInfo.getBarcode().equals(barcode)).findFirst().orElse(null);
+    }
 }
+
